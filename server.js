@@ -7,8 +7,6 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-console.log('EMAIL_USER:', process.env.EMAIL_USER);
-console.log('EMAIL_PASS:', process.env.EMAIL_PASS ? '*****' : 'Not Set');
 
 const transporter = nodemailer.createTransport({
   service: 'hotmail',
@@ -24,6 +22,10 @@ app.use(cors());
 app.post('/api/contact', (req, res) => {
   console.log('Recebendo dados do formulário:', req.body);
   const { name, email, message } = req.body;
+
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ error: 'Email inválido' });
+  }
 
   const adminMailOptions = {
     from: process.env.EMAIL_USER,
