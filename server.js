@@ -7,56 +7,52 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configuração do middleware
-app.use(bodyParser.json());
-app.use(cors());
+console.log('EMAIL_USER:', process.env.EMAIL_USER);
+console.log('EMAIL_PASS:', process.env.EMAIL_PASS ? '*****' : 'Not Set');
 
-// Configuração do Nodemailer para usar Hotmail/Outlook
 const transporter = nodemailer.createTransport({
   service: 'hotmail',
   auth: {
-    user: process.env.EMAIL_USER, // Usa variável de ambiente
-    pass: process.env.EMAIL_PASS  // Usa variável de ambiente
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
-// Rota para receber o formulário de contato
+app.use(bodyParser.json());
+app.use(cors());
+
 app.post('/api/contact', (req, res) => {
-  console.log('Recebendo dados do formulário:', req.body); // Log dos dados recebidos
+  console.log('Recebendo dados do formulário:', req.body);
   const { name, email, message } = req.body;
-  
-  // Opções do e-mail que será enviado ao administrador
+
   const adminMailOptions = {
-    from: process.env.EMAIL_USER, // Usa o email autenticado
-    to: process.env.EMAIL_USER, // Envia para o administrador
+    from: process.env.EMAIL_USER,
+    to: process.env.EMAIL_USER,
     subject: 'Novo contato do formulário',
     text: `Nome: ${name}\nEmail: ${email}\nMensagem: ${message}`
   };
 
-  // Opções do e-mail que será enviado ao usuário
   const userMailOptions = {
-    from: process.env.EMAIL_USER, // Usa o email autenticado
-    to: email, // Envia para o usuário
+    from: process.env.EMAIL_USER,
+    to: email,
     subject: 'Recebemos seu contato',
     text: `Olá ${name},\n\nRecebemos sua mensagem:\n\n"${message}"\n\nEntraremos em contato em breve.\n\nAtenciosamente,\nSua Empresa`
   };
 
-  // Envia o e-mail ao administrador
   transporter.sendMail(adminMailOptions, (error, info) => {
     if (error) {
-      console.error('Erro ao enviar email ao administrador:', error); // Log do erro detalhado
-      return res.status(500).json({ error: error.toString() }); // Retornar resposta em JSON
+      console.error('Erro ao enviar email ao administrador:', error);
+      return res.status(500).json({ error: error.toString() });
     }
-    console.log('Email enviado ao administrador:', info.response); // Log do sucesso
+    console.log('Email enviado ao administrador:', info.response);
 
-    // Envia o e-mail ao usuário
     transporter.sendMail(userMailOptions, (error, info) => {
       if (error) {
-        console.error('Erro ao enviar email ao usuário:', error); // Log do erro detalhado
-        return res.status(500).json({ error: error.toString() }); // Retornar resposta em JSON
+        console.error('Erro ao enviar email ao usuário:', error);
+        return res.status(500).json({ error: error.toString() });
       }
-      console.log('Email enviado ao usuário:', info.response); // Log do sucesso
-      res.status(200).json({ message: 'Email enviado com sucesso!', info: info.response }); // Retornar resposta em JSON
+      console.log('Email enviado ao usuário:', info.response);
+      res.status(200).json({ message: 'Email enviado com sucesso!', info: info.response });
     });
   });
 });
