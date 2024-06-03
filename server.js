@@ -1,13 +1,22 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const nodemailer = require('nodemailer');
 const cors = require('cors');
-const sgMail = require('@sendgrid/mail');
 require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+console.log('EMAIL_USER:', process.env.EMAIL_USER); // Log para verificar a variável de ambiente
+console.log('EMAIL_PASS:', process.env.EMAIL_PASS ? '*****' : 'Not Set'); // Log para verificar a variável de ambiente
+
+const transporter = nodemailer.createTransport({
+  service: 'hotmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -20,23 +29,21 @@ app.post('/api/contact', (req, res) => {
     return res.status(400).json({ error: 'Email inválido' });
   }
 
-  const msg = {
-    to: process.env.EMAIL_USER, // Seu próprio email
+  const mailOptions = {
     from: process.env.EMAIL_USER,
+    to: process.env.EMAIL_USER, // Seu próprio email
     subject: 'Novo contato do formulário',
     text: `Nome: ${name}\nEmail: ${email}\nMensagem: ${message}`
   };
 
-  sgMail
-    .send(msg)
-    .then(() => {
-      console.log('Email enviado');
-      res.status(200).json({ message: 'Email enviado com sucesso!' });
-    })
-    .catch(error => {
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
       console.error('Erro ao enviar email:', error);
-      res.status(500).json({ error: error.toString() });
-    });
+      return res.status(500).json({ error: error.toString() });
+    }
+    console.log('Email enviado:', info.response);
+    res.status(200).json({ message: 'Email enviado com sucesso!', info: info.response });
+  });
 });
 
 app.listen(port, () => {
