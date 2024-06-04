@@ -7,11 +7,11 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-console.log('EMAIL_USER:', process.env.EMAIL_USER); // Log para verificar a variável de ambiente
-console.log('EMAIL_PASS:', process.env.EMAIL_PASS ? '*****' : 'Not Set'); // Log para verificar a variável de ambiente
+console.log('EMAIL_USER:', process.env.EMAIL_USER);
+console.log('EMAIL_PASS:', process.env.EMAIL_PASS ? '*****' : 'Not Set');
 
 const transporter = nodemailer.createTransport({
-  service: 'hotmail',
+  service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
@@ -22,7 +22,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 app.post('/api/contact', (req, res) => {
-  console.log('Recebendo dados do formulário:', req.body); // Log dos dados recebidos
+  console.log('Recebendo dados do formulário:', req.body);
   const { name, email, message } = req.body;
 
   if (!email || !email.includes('@')) {
@@ -31,7 +31,7 @@ app.post('/api/contact', (req, res) => {
 
   const mailOptions = {
     from: process.env.EMAIL_USER,
-    to: process.env.EMAIL_USER, // Seu próprio email
+    to: process.env.EMAIL_USER,
     subject: 'Novo contato do formulário',
     text: `Nome: ${name}\nEmail: ${email}\nMensagem: ${message}`
   };
