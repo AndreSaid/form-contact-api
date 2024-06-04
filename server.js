@@ -23,7 +23,7 @@ app.use(cors());
 
 app.post('/api/contact', (req, res) => {
   console.log('Recebendo dados do formulário:', req.body);
-  const { name, email, message } = req.body;
+  const { name, email, phone, message } = req.body;
 
   if (!email || !email.includes('@')) {
     return res.status(400).json({ error: 'Email inválido' });
@@ -33,7 +33,7 @@ app.post('/api/contact', (req, res) => {
     from: process.env.EMAIL_USER,
     to: process.env.EMAIL_USER,
     subject: 'Novo contato do formulário',
-    text: `Nome: ${name}\nEmail: ${email}\nMensagem: ${message}`
+    text: `Nome: ${name}\nEmail: ${email}\nTelefone/WhatsApp: ${phone}\nMensagem: ${message}`
   };
 
   transporter.sendMail(mailOptions, (error, info) => {
